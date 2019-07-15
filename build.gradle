@@ -23,6 +23,9 @@ dependencies {
     
     // jsoup HTML parser library @ https://jsoup.org/
 	compile 'org.jsoup:jsoup:1.12.1'
+	
+	// https://mvnrepository.com/artifact/commons-io/commons-io
+	compile group: 'commons-io', name: 'commons-io', version: '2.5'
 }
 
 // In this section you declare where to find the dependencies of your project
