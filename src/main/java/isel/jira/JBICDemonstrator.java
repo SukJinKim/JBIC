@@ -34,11 +34,11 @@ public class JBICDemonstrator {
 		
 		options.addOption(domainOption);
 		options.addOption(projectKeyOption);
-		options.addOption(helpOption);String header = "...Description about JBIC...\n\n"; //TODO add description
+		options.addOption(helpOption);String header = "...Description about JiraBugIssueCrawler...\n\n"; //TODO add description
 		String footer = "\nPlease report issues at https://github.com/HGUISEL/JiraCrawler/issues\n\n";
 		
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("JBIC", header, options, footer, true);
+		formatter.printHelp("JiraBugIssueCrawler", header, options, footer, true);
 		
 		CommandLineParser parser = new DefaultParser();
 		
@@ -47,8 +47,8 @@ public class JBICDemonstrator {
 			
 			String domain = cmd.getOptionValue('d');
 			String projectKey = cmd.getOptionValue('p');
-			JBIC jbic = new JBIC(domain, projectKey);
-			jbic.run();
+			JiraBugIssueCrawler jiraBugIssueCrawler = new JiraBugIssueCrawler(domain, projectKey);
+			jiraBugIssueCrawler.run();
 			
 		}catch (ParseException e) {
 			System.err.println("\nParsing failed.\n\tReason - " + e.getMessage());

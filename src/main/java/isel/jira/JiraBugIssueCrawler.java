@@ -13,7 +13,7 @@ public class JiraBugIssueCrawler {
 	private String domain;
 	private String projectKey;
 	
-	private static final String DIR = "FILES/";// + File.separator;
+	private static final String DIR = "FILES" + File.separator;
 	private static final int INITIAL_START = -500;
 	private static final int INITIAL_END = 1;
 	private static final int PERIOD = Integer.parseUnsignedInt("500");
@@ -58,13 +58,13 @@ public class JiraBugIssueCrawler {
 			sendMessage2(period.getStart(), period.getEnd());
 	
 			boolean flag2 = requestSucceed(response.statusCode());
+			
 			boolean originalFlag2 = flag2;
 			int originalStart = period.getStart();
 			
 			while(flag2 == originalFlag2) {
 				originalStart = period.getStart();
 				if(flag2) { 
-				//flag2가 성공했다. = 아직 범위를 넓힐 수 있다.
 					period.increasePeriod();
 					System.out.println("\tIncreasing period...");
 				}else {
@@ -134,16 +134,16 @@ public class JiraBugIssueCrawler {
 		if(!m.find()) {
 			throw new InvalidDomainException();
 		}
+		
 		if(str.equals("issues.apache.org")) {//apache의 경우 뒤에 '/jira'가 붙음.
 			str = str.concat("/jira");
 		}
 		
 		return str;
 	}
-
-	//TODO File.separator 적용하기. response를 입력받으면 file을 만든다.
+	
 	private static void storeCSVFile(Connection.Response response, String savedFileName) throws IOException {
-		String simpleFileName = savedFileName.substring(savedFileName.indexOf("/")+1);
+		String simpleFileName = savedFileName.substring(savedFileName.indexOf(File.separator)+1);
 		System.out.println("\n\tFile " + simpleFileName +" is to be downloaded.");
 		byte[] bytes = response.bodyAsBytes();
 		File savedFile = new File(savedFileName);
