@@ -55,6 +55,8 @@ public class JBICDemonstrator {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (InvalidDomainException e) {
+			System.err.println("\nDomain is invalid.\n");
 		}
 	}
 

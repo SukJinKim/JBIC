@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Connection;
@@ -15,12 +17,10 @@ public class JBIC {
 	
 	private static final String DIR = "FILES/";
 	
-	public JBIC(String domain, String projectKey) {
+	public JBIC(String domain, String projectKey) throws InvalidDomainException {
 		super();
-		if(domain.equals("issues.apache.org")) {//TODO Is it good software design..?
-			domain = domain.concat("/jira");
-		}
-		this.domain = domain;
+		this.domain = validateDomain(domain); //TODO Is it a good design?
+		
 		this.projectKey = projectKey;
 	}
 	
@@ -122,7 +122,23 @@ public class JBIC {
 		storeCSVFile(response, savedFileName);
 	}
 	
-	private int recoverPeriod(boolean originalFlag2, int start, int end) {
+	//domain을 수정하는 method
+	private static String validateDomain(String domain) throws InvalidDomainException {
+		String str = domain;
+		Pattern p = Pattern.compile("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
+		Matcher m = p.matcher(str);
+		
+		if(!m.find()) {
+			//TODO InvalidDomainException 만들어서 throw하기
+			throw new InvalidDomainException();
+		}
+		if(str.equals("issues.apache.org")) {//apache의 경우 뒤에 '/jira'가 붙음.
+			str = str.concat("/jira");
+		}
+		return str;
+	}
+	
+	private static int recoverPeriod(boolean originalFlag2, int start, int end) {
 		int period = Math.abs(start - end);
 		int val;
 		if(originalFlag2) {//true이면 한 단계 감소해야 함.
