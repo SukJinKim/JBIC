@@ -20,7 +20,6 @@ public class JBIC {
 	public JBIC(String domain, String projectKey) throws InvalidDomainException {
 		super();
 		this.domain = validateDomain(domain); //TODO Is it a good design?
-		
 		this.projectKey = projectKey;
 	}
 	
@@ -49,26 +48,30 @@ public class JBIC {
 		String linkUrl2 = "https://" + this.domain + "/sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?jqlQuery=" + encodeJql(jql2);
 		
 		Connection.Response response = getResponse(linkUrl1);
+		sendMessage1(end);
 		
 		boolean flag1 = requestSucceed(response.statusCode()); 
 		
 		while(!flag1) {
 			response = getResponse(linkUrl2);
-			
+			sendMessage2(start, end);
+	
 			boolean flag2 = requestSucceed(response.statusCode());
 			boolean originalFlag2 = flag2;
+			int originalStart = start;
 			
 			while(flag2 == originalFlag2) {
 				if(flag2) { 
 				//flag2가 성공했다. = 아직 범위를 넓힐 수 있다.
+					originalStart = start;
 					start = increasePeriod(start, end);
-					System.out.println("\n\tSearching bug issues from " + start + " days to " + end + " days");
 					System.out.println("\tIncreasing period...");
 				}else {
+					originalStart = start;
 					start = decreasePeriod(start, end);
-					System.out.println("\n\tSearching bug issues from " + start + " days to " + end + " days");
 					System.out.println("\tDecreasing period...");
 				}
+				
 				////////////////
 				jql1 = "project = " + this.projectKey + " AND issuetype = Bug AND resolution = fixed AND created <= startOfDay(" + end +")";
 				jql2 = "project = " + this.projectKey + " AND issuetype = Bug AND resolution = fixed AND created <= startOfDay(" + end +") AND created > startOfDay(" + start + ")";
@@ -77,11 +80,13 @@ public class JBIC {
 				linkUrl2 = "https://" + this.domain + "/sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?jqlQuery=" + encodeJql(jql2);
 				/////////////////
 				response = getResponse(linkUrl2);
+				sendMessage2(start, end);
 				
 				flag2 = requestSucceed(response.statusCode());
 			}
-			//originalFlag2가 true이면 flag2는 계속 증가,false이면 계속 감소했다는 뜻. 따라서 각각 한 단계 감소, 증가해야 함.
-			start = recoverPeriod(originalFlag2, start, end);
+			
+			start = originalStart;
+			
 			////////////////
 			jql1 = "project = " + this.projectKey + " AND issuetype = Bug AND resolution = fixed AND created <= startOfDay(" + end +")";
 			jql2 = "project = " + this.projectKey + " AND issuetype = Bug AND resolution = fixed AND created <= startOfDay(" + end +") AND created > startOfDay(" + start + ")";
@@ -91,6 +96,7 @@ public class JBIC {
 			/////////////////
 			
 			response = getResponse(linkUrl2);
+			sendMessage2(start, end);
 			if(requestSucceed(response.statusCode())) {
 				//파일을 만든다.
 				String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
@@ -104,6 +110,7 @@ public class JBIC {
 			//start와 end 값 수정하고 jql1 던지기
 			end = start;
 			start = start - 100;
+			
 			////////////////
 			jql1 = "project = " + this.projectKey + " AND issuetype = Bug AND resolution = fixed AND created <= startOfDay(" + end +")";
 			jql2 = "project = " + this.projectKey + " AND issuetype = Bug AND resolution = fixed AND created <= startOfDay(" + end +") AND created > startOfDay(" + start + ")";
@@ -111,7 +118,9 @@ public class JBIC {
 			linkUrl1 = "https://" + this.domain + "/sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?jqlQuery=" + encodeJql(jql1);
 			linkUrl2 = "https://" + this.domain + "/sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?jqlQuery=" + encodeJql(jql2);
 			/////////////////
+			
 			response = getResponse(linkUrl1);
+			sendMessage1(end);
 			flag1 = requestSucceed(response.statusCode());
 		}
 		
@@ -122,6 +131,16 @@ public class JBIC {
 		storeCSVFile(response, savedFileName);
 	}
 	
+	//url2를 접근할 때 user에게 메시지 보내기
+	private static void sendMessage2(int start, int end) {
+		System.out.println("\n\tSearching bug issues from " + start + " days to " + end + " days");
+	}
+	
+	//url1을 접근할 때 user에게 메시지 보내기
+	private static void sendMessage1(int end) {
+		System.out.println("\n\tSearching bug issues before " + end + " days");
+	}
+	
 	//domain을 수정하는 method
 	private static String validateDomain(String domain) throws InvalidDomainException {
 		String str = domain;
@@ -129,24 +148,13 @@ public class JBIC {
 		Matcher m = p.matcher(str);
 		
 		if(!m.find()) {
-			//TODO InvalidDomainException 만들어서 throw하기
 			throw new InvalidDomainException();
 		}
 		if(str.equals("issues.apache.org")) {//apache의 경우 뒤에 '/jira'가 붙음.
 			str = str.concat("/jira");
 		}
+		
 		return str;
-	}
-	
-	private static int recoverPeriod(boolean originalFlag2, int start, int end) {
-		int period = Math.abs(start - end);
-		int val;
-		if(originalFlag2) {//true이면 한 단계 감소해야 함.
-			val = end - period / 2;
-		}else {
-			val = end - period * 4/3;
-		}
-		return val;
 	}
 
 	//TODO File.separator 적용하기. response를 입력받으면 file을 만든다.
