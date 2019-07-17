@@ -125,7 +125,6 @@ public class JiraBugIssueCrawler {
 		System.out.println("\n\tSearching bug issues before " + end + " days");
 	}
 	
-	//domain을 수정하는 method
 	private static String validateDomain(String domain) throws InvalidDomainException {
 		String str = domain;
 		Pattern p = Pattern.compile("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
@@ -152,7 +151,6 @@ public class JiraBugIssueCrawler {
 		System.out.println("\tFile " + simpleFileName +" has been downloaded.");
 	}
 	
-	//URL을 받으면 연결해서 response를 return하는 method
 	private static Connection.Response getResponse(String url) throws IOException{
 		System.out.println("\nConnecting " + url + "...");
 		return Jsoup.connect(url)
@@ -162,7 +160,6 @@ public class JiraBugIssueCrawler {
 				.execute();
 	}
 	
-	//status를 받아서 request의 성공여부를 확인하는 method [requestSucceed(int statusCode)]
 	private static boolean requestSucceed(int statusCode) {
 		return (statusCode / 100 == 2); //status code 2xx means that request has been succeeded.
 	}
