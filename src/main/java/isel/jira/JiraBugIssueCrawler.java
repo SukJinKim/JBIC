@@ -15,7 +15,8 @@ public class JiraBugIssueCrawler {
 	private static int disconnectionCausedByInvalidProjectKeyCount = 0;
 	
 	private static final String DIR = "FILES" + File.separator;
-	private static final int INITIAL_START = -500;
+//	private static final int INITIAL_START = -500;
+	private static final int INITIAL_START = -2000;
 	private static final int INITIAL_END = 1;
 	private static final int PERIOD = Integer.parseUnsignedInt("500");
 	private static final int MAX_DISCONNECTION = 30; //TODO 수학적으로 공식을 구해서 더 멋있게 코딩할 수 있을 것 같은데...
@@ -87,22 +88,20 @@ public class JiraBugIssueCrawler {
 			
 			offInvalidProjectKeyChecking();
 			
-			period.setStart(originalStart);
+			if(originalFlag2) { 
+				period.setStart(originalStart); //recover original value of start when period has been increased.
+			}
 			
 			encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
 			linkUrl = urlManager.getURL(encodedJql);
 			response = getResponse(linkUrl);
 			sendMessage2(period.getStart(), period.getEnd());
 			
-			if(requestSucceed(response.statusCode())) {
-				//파일을 만든다.
-				String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
-				String savedFileName = DIR.concat(teamName + this.projectKey + fileCount).concat(".csv");
-				fileCount++;
-				storeCSVFile(response, savedFileName);
-			}else {
-				System.err.println("\n\t...Fatal Error..."); //TODO 이거 어떻게처리하지...?
-			}
+			//파일을 만든다.
+			String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
+			String savedFileName = DIR.concat(teamName + this.projectKey + fileCount).concat(".csv");
+			fileCount++;
+			storeCSVFile(response, savedFileName);
 			
 			period.movePeriod(PERIOD);
 			
