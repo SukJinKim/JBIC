@@ -21,11 +21,10 @@ public class JBICDemonstrator {
 			jbicDemonstrator.run(args);
 		} catch(ParseException e) {
 			System.err.println("\nParsing failed.\n\tReason - " + e.getMessage());
-		}catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (InvalidDomainException e1) {
-			System.err.println("\nDomain is invalid.\n");
+		}catch (IOException e) {
+			e.printStackTrace();
+		} catch (InvalidDomainException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -93,8 +92,9 @@ public class JBICDemonstrator {
 				return;
 			}
 			
-			System.out.println("\n\tYou provided " + domain + " as the value of the optino d");
-			System.out.println("\tYou provided " + projectKey + " as the value of the optino p");
+			System.out.println("\n\tYou provided \'" + domain + "\' as the value of the option d");
+			System.out.println("\tYou provided \'" + projectKey + "\' as the value of the option p");
+			
 			JiraBugIssueCrawler jiraBugIssueCrawler = new JiraBugIssueCrawler(domain, projectKey);
 			jiraBugIssueCrawler.run();
 			

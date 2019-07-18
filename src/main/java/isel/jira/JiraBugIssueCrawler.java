@@ -2,8 +2,6 @@ package isel.jira;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Connection;
@@ -127,10 +125,9 @@ public class JiraBugIssueCrawler {
 	
 	private static String validateDomain(String domain) throws InvalidDomainException {
 		String str = domain;
-		Pattern p = Pattern.compile("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
-		Matcher m = p.matcher(str);
+		String domainRegex = "(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]";
 		
-		if(!m.find()) {
+		if(!str.matches(domainRegex)) {
 			throw new InvalidDomainException();
 		}
 		

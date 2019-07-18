@@ -3,8 +3,7 @@ package isel.jira;
 public class InvalidDomainException extends Exception{
 
 	public InvalidDomainException() {
-		super();
-		// TODO Auto-generated constructor stub
+		this("Domain is invalid.");
 	}
 
 	public InvalidDomainException(String message, Throwable cause, boolean enableSuppression,
