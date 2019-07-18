@@ -11,17 +11,20 @@ public class JiraBugIssueCrawler {
 	private String domain;
 	private String projectKey;
 	
+	private static boolean invalidProjectKeyChecker = true;
+	private static int disconnectionCausedByInvalidProjectKeyCount = 0;
+	
 	private static final String DIR = "FILES" + File.separator;
 	private static final int INITIAL_START = -500;
 	private static final int INITIAL_END = 1;
 	private static final int PERIOD = Integer.parseUnsignedInt("500");
+	private static final int MAX_DISCONNECTION = 30; //TODO 수학적으로 공식을 구해서 더 멋있게 코딩할 수 있을 것 같은데...
 	
 	public JiraBugIssueCrawler(String domain, String projectKey) throws InvalidDomainException {
-		super();
 		this.domain = validateDomain(domain);
 		this.projectKey = projectKey;
 	}
-	
+
 	public String getDomain() {
 		return domain;
 	}
@@ -35,7 +38,7 @@ public class JiraBugIssueCrawler {
 		this.projectKey = projectKey;
 	}
 	
-	public void run() throws IOException {
+	public void run() throws IOException, InvalidProjectKeyException {
 		Period period = new Period(INITIAL_START, INITIAL_END);
 		JQLManager jqlManager = new JQLManager(this.projectKey);
 		URLManager urlManager = new URLManager(this.domain);
@@ -66,10 +69,14 @@ public class JiraBugIssueCrawler {
 					period.increasePeriod();
 					System.out.println("\tIncreasing period...");
 				}else {
+					if(invalidProjectKeyChecker && disconnectionCausedByInvalidProjectKeyCount > MAX_DISCONNECTION) {
+						throw new InvalidProjectKeyException();
+					}
 					period.decreasePeriod();
 					System.out.println("\tDecreasing period...");
+					disconnectionCausedByInvalidProjectKeyCount++;
 				}
-			
+				
 				encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
 				linkUrl = urlManager.getURL(encodedJql);
 				response = getResponse(linkUrl);
@@ -77,6 +84,8 @@ public class JiraBugIssueCrawler {
 				
 				flag2 = requestSucceed(response.statusCode());
 			}
+			
+			offInvalidProjectKeyChecking();
 			
 			period.setStart(originalStart);
 			
@@ -113,6 +122,10 @@ public class JiraBugIssueCrawler {
 		storeCSVFile(response, savedFileName);
 	}
 	
+	private void offInvalidProjectKeyChecking() {
+		invalidProjectKeyChecker = false;
+	}
+
 	//url2를 접근할 때 user에게 메시지 보내기
 	private static void sendMessage2(int start, int end) {
 		System.out.println("\n\tSearching bug issues from " + start + " days to " + end + " days");

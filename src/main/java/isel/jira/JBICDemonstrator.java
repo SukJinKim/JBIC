@@ -25,6 +25,8 @@ public class JBICDemonstrator {
 			e.printStackTrace();
 		} catch (InvalidDomainException e) {
 			e.printStackTrace();
+		} catch (InvalidProjectKeyException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -83,7 +85,7 @@ public class JBICDemonstrator {
 		return true;
 	}
 	
-	private void run(String[] args) throws ParseException, IOException, InvalidDomainException {
+	private void run(String[] args) throws ParseException, IOException, InvalidDomainException, InvalidProjectKeyException {
 		Options options = createOptions();
 		
 		if(parseOptions(options, args)){

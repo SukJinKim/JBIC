@@ -1,5 +1,6 @@
 package isel.jira;
 
+@SuppressWarnings("serial")
 public class InvalidDomainException extends Exception{
 
 	public InvalidDomainException() {
