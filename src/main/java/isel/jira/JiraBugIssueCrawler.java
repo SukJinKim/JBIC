@@ -2,6 +2,8 @@ package isel.jira;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Connection;
@@ -15,8 +17,7 @@ public class JiraBugIssueCrawler {
 	private static int disconnectionCausedByInvalidProjectKeyCount = 0;
 	
 	private static final String DIR = "FILES" + File.separator;
-//	private static final int INITIAL_START = -500;
-	private static final int INITIAL_START = -2000;
+	private static final int INITIAL_START = -1000;
 	private static final int INITIAL_END = 1;
 	private static final int PERIOD = Integer.parseUnsignedInt("500");
 	private static final int MAX_DISCONNECTION = 30; //TODO 수학적으로 공식을 구해서 더 멋있게 코딩할 수 있을 것 같은데...
@@ -44,14 +45,12 @@ public class JiraBugIssueCrawler {
 		JQLManager jqlManager = new JQLManager(this.projectKey);
 		URLManager urlManager = new URLManager(this.domain);
 		
-		int fileCount = 1;
-		
 		String encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL1(period.getEnd()));
 		String linkUrl = urlManager.getURL(encodedJql);
 		Connection.Response response = getResponse(linkUrl);
 		sendMessage1(period.getEnd());
 		
-		boolean flag1 = requestSucceed(response.statusCode()); 
+		boolean flag1 = requestSucceed(response.statusCode());  //flag1 is an indicator that checks whether a response was succeeded when approached by JQL1.
 		
 		while(!flag1) {
 			encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
@@ -59,10 +58,10 @@ public class JiraBugIssueCrawler {
 			response = getResponse(linkUrl);
 			sendMessage2(period.getStart(), period.getEnd());
 	
-			boolean flag2 = requestSucceed(response.statusCode());
+			boolean flag2 = requestSucceed(response.statusCode()); //flag2 is an indicator that checks whether a response was succeeded when approached by JQL2.
 			
-			boolean originalFlag2 = flag2;
-			int originalStart = period.getStart();
+			boolean originalFlag2 = flag2; //originalFlag2 is same as value of flag2 before increasing period or decreasing period.
+			int originalStart = period.getStart(); //originalStart is same as value of start before increasing period or decreasing period.
 			
 			while(flag2 == originalFlag2) {
 				originalStart = period.getStart();
@@ -86,10 +85,10 @@ public class JiraBugIssueCrawler {
 				flag2 = requestSucceed(response.statusCode());
 			}
 			
-			offInvalidProjectKeyChecking();
+			offInvalidProjectKeyChecking(); //From now, there is no possibilities that the user may have entered nonexistent project key.
 			
 			if(originalFlag2) { 
-				period.setStart(originalStart); //recover original value of start when period has been increased.
+				period.setStart(originalStart); //recover original value of start only when period was increased.
 			}
 			
 			encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
@@ -97,10 +96,11 @@ public class JiraBugIssueCrawler {
 			response = getResponse(linkUrl);
 			sendMessage2(period.getStart(), period.getEnd());
 			
-			//파일을 만든다.
+			//store CSV file
 			String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
-			String savedFileName = DIR.concat(teamName + this.projectKey + fileCount).concat(".csv");
-			fileCount++;
+			Date date= new Date();
+			Timestamp ts = new Timestamp(date.getTime());
+			String savedFileName = DIR.concat(teamName + this.projectKey + ts).concat(".csv");
 			storeCSVFile(response, savedFileName);
 			
 			period.movePeriod(PERIOD);
@@ -114,10 +114,12 @@ public class JiraBugIssueCrawler {
 			flag1 = requestSucceed(response.statusCode());
 		}
 		
-		//파일 만들고 종료
+		//store CSV file
 		String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
-		String savedFileName = DIR.concat(teamName + this.projectKey + fileCount).concat(".csv");
-		fileCount++;
+		Date date= new Date();
+		Timestamp ts = new Timestamp(date.getTime());
+		String savedFileName = DIR.concat(teamName + this.projectKey + ts).concat(".csv");
+	
 		storeCSVFile(response, savedFileName);
 	}
 	
@@ -125,12 +127,10 @@ public class JiraBugIssueCrawler {
 		invalidProjectKeyChecker = false;
 	}
 
-	//url2를 접근할 때 user에게 메시지 보내기
 	private static void sendMessage2(int start, int end) {
 		System.out.println("\n\tSearching bug issues from " + start + " days to " + end + " days");
 	}
 	
-	//url1을 접근할 때 user에게 메시지 보내기
 	private static void sendMessage1(int end) {
 		System.out.println("\n\tSearching bug issues before " + end + " days");
 	}

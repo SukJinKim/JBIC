@@ -31,7 +31,7 @@ public class JBICDemonstrator {
 	}
 	
 	//Definition stage
-	//TODO verbose mode 추가
+	//TODO verbose mode 추가, path 입력추가
 	private Options createOptions() {
 		Options options = new Options();
 		
