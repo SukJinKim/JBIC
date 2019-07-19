@@ -26,19 +26,6 @@ public class JiraBugIssueCrawler {
 		this.domain = validateDomain(domain);
 		this.projectKey = projectKey;
 	}
-
-	public String getDomain() {
-		return domain;
-	}
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
-	public String getProjectKey() {
-		return projectKey;
-	}
-	public void setProjectKey(String projectKey) {
-		this.projectKey = projectKey;
-	}
 	
 	public void run() throws IOException, InvalidProjectKeyException {
 		Period period = new Period(INITIAL_START, INITIAL_END);
