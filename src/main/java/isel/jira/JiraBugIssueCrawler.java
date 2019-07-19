@@ -48,17 +48,17 @@ public class JiraBugIssueCrawler {
 		String encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL1(period.getEnd()));
 		String linkUrl = urlManager.getURL(encodedJql);
 		Connection.Response response = getResponse(linkUrl);
-		sendMessage1(period.getEnd());
+		System.out.println("\n\tSearching bug issues before " + period.getEnd() + " days");
 		
-		boolean flag1 = requestSucceed(response.statusCode());  //flag1 is an indicator that checks whether a response was succeeded when approached by JQL1.
+		boolean flag1 = requestSucceed(response.statusCode());  //flag1 is an indicator that checks whether a response was succeeded when approached linkUrl with encoded JQL1.
 		
 		while(!flag1) {
 			encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
 			linkUrl = urlManager.getURL(encodedJql);
 			response = getResponse(linkUrl);
-			sendMessage2(period.getStart(), period.getEnd());
+			System.out.println("\n\tSearching bug issues from " + period.getStart() + " days to " + period.getEnd() + " days");
 	
-			boolean flag2 = requestSucceed(response.statusCode()); //flag2 is an indicator that checks whether a response was succeeded when approached by JQL2.
+			boolean flag2 = requestSucceed(response.statusCode()); //flag2 is an indicator that checks whether a response was succeeded when approached linkUrl with encoded JQL2.
 			
 			boolean originalFlag2 = flag2; //originalFlag2 is same as value of flag2 before increasing period or decreasing period.
 			int originalStart = period.getStart(); //originalStart is same as value of start before increasing period or decreasing period.
@@ -80,7 +80,7 @@ public class JiraBugIssueCrawler {
 				encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
 				linkUrl = urlManager.getURL(encodedJql);
 				response = getResponse(linkUrl);
-				sendMessage2(period.getStart(), period.getEnd());
+				System.out.println("\n\tSearching bug issues from " + period.getStart() + " days to " + period.getEnd() + " days");
 				
 				flag2 = requestSucceed(response.statusCode());
 			}
@@ -94,10 +94,10 @@ public class JiraBugIssueCrawler {
 			encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL2(period.getStart(), period.getEnd()));
 			linkUrl = urlManager.getURL(encodedJql);
 			response = getResponse(linkUrl);
-			sendMessage2(period.getStart(), period.getEnd());
+			System.out.println("\n\tSearching bug issues from " + period.getStart() + " days to " + period.getEnd() + " days");
 			
 			//store CSV file
-			String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
+			String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.')); //TeamName is between . marks in domain.
 			Date date= new Date();
 			Timestamp ts = new Timestamp(date.getTime());
 			String savedFileName = DIR.concat(teamName + this.projectKey + ts).concat(".csv");
@@ -109,13 +109,13 @@ public class JiraBugIssueCrawler {
 			linkUrl = urlManager.getURL(encodedJql);
 			
 			response = getResponse(linkUrl);
-			sendMessage1(period.getEnd());
+			System.out.println("\n\tSearching bug issues before " + period.getEnd() + " days");
 			
 			flag1 = requestSucceed(response.statusCode());
 		}
 		
 		//store CSV file
-		String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.'));
+		String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.')); //TeamName is between . marks in domain.
 		Date date= new Date();
 		Timestamp ts = new Timestamp(date.getTime());
 		String savedFileName = DIR.concat(teamName + this.projectKey + ts).concat(".csv");
@@ -126,14 +126,6 @@ public class JiraBugIssueCrawler {
 	private void offInvalidProjectKeyChecking() {
 		invalidProjectKeyChecker = false;
 	}
-
-	private static void sendMessage2(int start, int end) {
-		System.out.println("\n\tSearching bug issues from " + start + " days to " + end + " days");
-	}
-	
-	private static void sendMessage1(int end) {
-		System.out.println("\n\tSearching bug issues before " + end + " days");
-	}
 	
 	private static String validateDomain(String domain) throws InvalidDomainException {
 		String str = domain;
@@ -143,7 +135,7 @@ public class JiraBugIssueCrawler {
 			throw new InvalidDomainException();
 		}
 		
-		if(str.equals("issues.apache.org")) {//apache의 경우 뒤에 '/jira'가 붙음.
+		if(str.equals("issues.apache.org")) {//Apache has /jira in the back.
 			str = str.concat("/jira");
 		}
 		
