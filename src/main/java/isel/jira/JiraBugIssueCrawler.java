@@ -1,36 +1,39 @@
 package isel.jira;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 
-import org.apache.commons.io.FileUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 public class JiraBugIssueCrawler {
 	private String domain;
 	private String projectKey;
+	private String path;
 	
 	private static boolean invalidProjectKeyChecker = true;
 	private static int disconnectionCausedByInvalidProjectKeyCount = 0;
 	
-	private static final String DIR = "FILES" + File.separator;
 	private static final int INITIAL_START = -1000;
 	private static final int INITIAL_END = 1;
 	private static final int PERIOD = Integer.parseUnsignedInt("500");
-	private static final int MAX_DISCONNECTION = 30; //TODO 수학적으로 공식을 구해서 더 멋있게 코딩할 수 있을 것 같은데...
+	private static final int MAX_DISCONNECTION = 50; //TODO using mathematical methods to improve
+	private static final String DEFAULT_PATH = System.getProperty("user.dir"); //current working directory
 	
-	public JiraBugIssueCrawler(String domain, String projectKey) throws InvalidDomainException {
-		this.domain = validateDomain(domain);
-		this.projectKey = projectKey;
+	public JiraBugIssueCrawler(String domain, String projectKey) throws InvalidDomainException{
+		this(domain, projectKey, DEFAULT_PATH);
 	}
 	
+	public JiraBugIssueCrawler(String domain, String projectKey, String path) throws InvalidDomainException {
+		this.domain = validateDomain(domain);
+		this.projectKey = projectKey;
+		this.path = path;
+	}
+
 	public void run() throws IOException, InvalidProjectKeyException {
 		Period period = new Period(INITIAL_START, INITIAL_END);
 		JQLManager jqlManager = new JQLManager(this.projectKey);
 		URLManager urlManager = new URLManager(this.domain);
+		FileManager fileManager = new FileManager(this.path, this.domain, this.projectKey);
 		
 		String encodedJql = jqlManager.getEncodedJQL(jqlManager.getJQL1(period.getEnd()));
 		String linkUrl = urlManager.getURL(encodedJql);
@@ -72,7 +75,7 @@ public class JiraBugIssueCrawler {
 				flag2 = requestSucceed(response.statusCode());
 			}
 			
-			offInvalidProjectKeyChecking(); //From now, there is no possibilities that the user may have entered nonexistent project key.
+			offInvalidProjectKeyChecking(); //From now on, there is no possibilities that the user may have entered nonexistent project key.
 			
 			if(originalFlag2) { 
 				period.setStart(originalStart); //recover original value of start only when period was increased.
@@ -83,12 +86,7 @@ public class JiraBugIssueCrawler {
 			response = getResponse(linkUrl);
 			System.out.println("\n\tSearching bug issues from " + period.getStart() + " days to " + period.getEnd() + " days");
 			
-			//store CSV file
-			String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.')); //TeamName is between . marks in domain.
-			Date date= new Date();
-			Timestamp ts = new Timestamp(date.getTime());
-			String savedFileName = DIR.concat(teamName + this.projectKey + ts).concat(".csv");
-			storeCSVFile(response, savedFileName);
+			fileManager.storeCSVFile(response); //store CSV file
 			
 			period.movePeriod(PERIOD);
 			
@@ -101,13 +99,7 @@ public class JiraBugIssueCrawler {
 			flag1 = requestSucceed(response.statusCode());
 		}
 		
-		//store CSV file
-		String teamName = this.domain.substring(this.domain.indexOf('.') + 1, this.domain.lastIndexOf('.')); //TeamName is between . marks in domain.
-		Date date= new Date();
-		Timestamp ts = new Timestamp(date.getTime());
-		String savedFileName = DIR.concat(teamName + this.projectKey + ts).concat(".csv");
-	
-		storeCSVFile(response, savedFileName);
+		fileManager.storeCSVFile(response); //store CSV file
 	}
 	
 	private void offInvalidProjectKeyChecking() {
@@ -127,16 +119,6 @@ public class JiraBugIssueCrawler {
 		}
 		
 		return str;
-	}
-	
-	private static void storeCSVFile(Connection.Response response, String savedFileName) throws IOException {
-		String simpleFileName = savedFileName.substring(savedFileName.indexOf(File.separator)+1);
-		System.out.println("\n\tFile " + simpleFileName +" is to be downloaded.");
-		byte[] bytes = response.bodyAsBytes();
-		File savedFile = new File(savedFileName);
-		savedFile.getParentFile().mkdirs();
-		FileUtils.writeByteArrayToFile(savedFile, bytes);
-		System.out.println("\tFile " + simpleFileName +" has been downloaded.");
 	}
 	
 	private static Connection.Response getResponse(String url) throws IOException{

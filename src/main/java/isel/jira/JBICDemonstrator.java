@@ -14,6 +14,8 @@ public class JBICDemonstrator {
 	private String domain;
 	private String projectKey;
 	private boolean help;
+	private boolean pathMode;
+	private String path;
 
 	public static void main(String[] args) {
 		JBICDemonstrator jbicDemonstrator = new JBICDemonstrator();
@@ -45,7 +47,7 @@ public class JBICDemonstrator {
 		options.addOption(Option.builder("p")
 								.hasArg()
 								.required()
-								.longOpt("projectKey")
+								.longOpt("Set project key")
 								.desc("Set project key")
 								.build());
 		
@@ -53,6 +55,12 @@ public class JBICDemonstrator {
 								.longOpt("help")
 								.desc("Help")
 								.build());
+		
+		options.addOption(Option.builder("D")
+								.hasArg()
+								.longOpt("path")
+								.desc("Set a path to store csv files")
+								.build());		
 
 		return options;
 	}
@@ -76,6 +84,8 @@ public class JBICDemonstrator {
 			domain = cmd.getOptionValue('d');
 			projectKey = cmd.getOptionValue('p');
 			help = cmd.hasOption('h');
+			pathMode = cmd.hasOption('D');
+			path = cmd.getOptionValue('D');
 			
 		} catch (ParseException e) {
 			printHelp(options);
@@ -94,12 +104,20 @@ public class JBICDemonstrator {
 				return;
 			}
 			
-			System.out.println("\n\tYou provided \'" + domain + "\' as the value of the option d");
-			System.out.println("\tYou provided \'" + projectKey + "\' as the value of the option p");
-			
-			JiraBugIssueCrawler jiraBugIssueCrawler = new JiraBugIssueCrawler(domain, projectKey);
-			jiraBugIssueCrawler.run();
-			
+			if(pathMode) {
+				System.out.println("\n\tYou provided \'" + domain + "\' as the value of the option d");
+				System.out.println("\tYou provided \'" + projectKey + "\' as the value of the option p");
+				System.out.println("\tYou provided \'" + path + "\' as the value of the option D");
+				
+				JiraBugIssueCrawler jiraBugIssueCrawler = new JiraBugIssueCrawler(domain, projectKey, path);
+				jiraBugIssueCrawler.run();
+			}else {
+				System.out.println("\n\tYou provided \'" + domain + "\' as the value of the option d");
+				System.out.println("\tYou provided \'" + projectKey + "\' as the value of the option p");
+				
+				JiraBugIssueCrawler jiraBugIssueCrawler = new JiraBugIssueCrawler(domain, projectKey);
+				jiraBugIssueCrawler.run();
+			}	
 		}
 	}
 }
