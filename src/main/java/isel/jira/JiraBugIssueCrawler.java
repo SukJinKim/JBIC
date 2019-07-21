@@ -100,6 +100,9 @@ public class JiraBugIssueCrawler {
 		}
 		
 		fileManager.storeCSVFile(response); //store CSV file
+		
+		//TEST
+//		fileManager.showFileList();
 	}
 	
 	private void offInvalidProjectKeyChecking() {
