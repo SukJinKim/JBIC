@@ -101,8 +101,7 @@ public class JiraBugIssueCrawler {
 		
 		fileManager.storeCSVFile(response); //store CSV file
 		
-		//TEST
-//		fileManager.showFileList();
+		fileManager.collectIssueKeys(); //collect and store issue keys into CSV file
 	}
 	
 	private void offInvalidProjectKeyChecking() {
