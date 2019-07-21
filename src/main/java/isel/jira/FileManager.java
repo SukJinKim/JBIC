@@ -28,16 +28,18 @@ public class FileManager {
 	}
 	
 	public void storeCSVFile(Connection.Response response) throws IOException {
+		//Set file name
 		Date date= new Date();
 		Timestamp ts = new Timestamp(date.getTime());
-		
 		String teamName = validateTeamName(this.domain);
 		String dir = this.path + File.separator + teamName + this.projectKey + File.separator;
 		String savedFileName = dir + teamName + this.projectKey + ts + ".csv";
 		String simpleFileName = savedFileName.substring(savedFileName.lastIndexOf(File.separator)+1);
 		
+		//insert file into fileList
 		fileList.add(savedFileName);
 		
+		//download csv files
 		System.out.println("\n\tFile " + simpleFileName +" is to be downloaded in " + dir);
 		byte[] bytes = response.bodyAsBytes();
 		File savedFile = new File(savedFileName);
@@ -52,22 +54,26 @@ public class FileManager {
 	}
 	
 	public void collectIssueKeys() throws IOException {
-		for(String file:fileList) {
-			System.out.println("\n\tCollecting Issue Keys from " + file);
+		for(String file:fileList) { //extract and store issue keys into issueKeyList 
+			System.out.println("\nExtracting Issue Keys from " + file);
 			
 			String in = FileUtils.readFileToString(new File(file), "UTF-8");
 			extractIssueKeys(in, this.projectKey);
-			
-			String issueKeysWithComma = String.join(",", issueKeyList);
-			
-			String teamName = validateTeamName(this.domain);
-			String dir = this.path + File.separator + teamName + this.projectKey + File.separator;
-			String savedFileName = dir + teamName + this.projectKey + "IssueKeys.csv";
-			
-			File savedFile = new File(savedFileName);
-			savedFile.getParentFile().mkdirs();
-			FileUtils.write(savedFile, issueKeysWithComma, "UTF-8");	
 		}
+		
+		String issueKeysWithComma = String.join(",", issueKeyList);
+		//Set file name
+		Date date= new Date();
+		Timestamp ts = new Timestamp(date.getTime());
+		String teamName = validateTeamName(this.domain);
+		String dir = this.path + File.separator + teamName + this.projectKey + File.separator;
+		String savedFileName = dir + teamName + this.projectKey + "IssueKeys" + ts + ".csv";
+		//make file
+		System.out.println("\n\tCollecting Issue keys into " + savedFileName);
+		File savedFile = new File(savedFileName);
+		savedFile.getParentFile().mkdirs();
+		FileUtils.write(savedFile, issueKeysWithComma, "UTF-8");
+		System.out.println("\tCollecting completed.");
 	}
 	
 	private static void extractIssueKeys(String in, String projectKey) {
