@@ -61,7 +61,7 @@ public class FileManager {
 			extractIssueKeys(in, this.projectKey);
 		}
 		
-		String issueKeysWithComma = String.join(",", issueKeyList);
+		String issueKeysWithComma = String.join("\n", issueKeyList);
 		//Set file name
 		Date date= new Date();
 		Timestamp ts = new Timestamp(date.getTime());

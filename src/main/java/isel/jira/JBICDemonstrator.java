@@ -33,7 +33,7 @@ public class JBICDemonstrator {
 	}
 	
 	//Definition stage
-	//TODO verbose mode 추가, path 입력추가
+	//TODO verbose mode 추가
 	private Options createOptions() {
 		Options options = new Options();
 		
@@ -60,7 +60,7 @@ public class JBICDemonstrator {
 								.hasArg()
 								.longOpt("path")
 								.desc("Set a path to store csv files")
-								.build());		
+								.build());
 
 		return options;
 	}
