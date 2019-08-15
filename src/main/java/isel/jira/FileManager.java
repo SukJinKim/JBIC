@@ -6,8 +6,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Connection;
@@ -58,7 +57,7 @@ public class FileManager {
 			System.out.println("\nExtracting Issue Keys from " + file);
 			
 			String in = FileUtils.readFileToString(new File(file), "UTF-8");
-			extractIssueKeys(in, this.projectKey);
+			extractIssueKeys(in);
 		}
 		
 		String issueKeysWithComma = String.join("\n", issueKeyList);
@@ -76,12 +75,16 @@ public class FileManager {
 		System.out.println("\tCollecting completed.");
 	}
 	
-	private static void extractIssueKeys(String in, String projectKey) {
-		String issueKeyRegex = "(" + projectKey + "-\\d*)";
-		Pattern p = Pattern.compile(issueKeyRegex);
-		Matcher m = p.matcher(in);
-		while(m.find()) {
-			issueKeyList.add(m.group());
+	private static void extractIssueKeys(String in) {
+		String[] fileContentsPerLine = in.split("\n");
+		
+		for(int i = 1; i < fileContentsPerLine.length; i++) { //From the second line, issue key is included.
+			int initialCommaIdx = fileContentsPerLine[i].indexOf(",") + 1; 
+			int nextCommaIdx = fileContentsPerLine[i].indexOf(",", initialCommaIdx + 1);
+			
+			//The issue key is located between the first comma location and then the comma location.
+			String issueKey = fileContentsPerLine[i].substring(initialCommaIdx, nextCommaIdx);
+			issueKeyList.add(issueKey);
 		}
 	}
 }
