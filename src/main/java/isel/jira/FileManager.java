@@ -60,18 +60,16 @@ public class FileManager {
 			extractIssueKeys(in);
 		}
 		
-		String issueKeysWithComma = String.join("\n", issueKeyList);
+		String issueKeysWithNewLine = String.join("\n", issueKeyList);
 		//Set file name
-		Date date= new Date();
-		Timestamp ts = new Timestamp(date.getTime());
 		String teamName = validateTeamName(this.domain);
 		String dir = this.path + File.separator + teamName + this.projectKey + File.separator;
-		String savedFileName = dir + teamName + this.projectKey + "IssueKeys" + ts + ".csv";
+		String savedFileName = dir + teamName + this.projectKey + "IssueKeys.csv";
 		//make file
 		System.out.println("\n\tCollecting Issue keys into " + savedFileName);
 		File savedFile = new File(savedFileName);
 		savedFile.getParentFile().mkdirs();
-		FileUtils.write(savedFile, issueKeysWithComma, "UTF-8");
+		FileUtils.write(savedFile, issueKeysWithNewLine, "UTF-8");
 		System.out.println("\tCollecting completed.");
 	}
 	
